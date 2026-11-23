@@ -73,7 +73,7 @@ export default function CrearPublicacionPage() {
           description: description.trim(),
           userId: usuario.id,
           UserId: usuario.id,
-          tagsIds: etiquetasSeleccionadas,
+          tagIds: etiquetasSeleccionadas,
         }),
       });
 
