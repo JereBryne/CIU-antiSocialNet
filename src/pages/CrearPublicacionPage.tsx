@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { obtenerEtiquetas } from "../services/etiquetaService";
 import type { Etiqueta } from "../types/Etiqueta";
+import { API_URL } from "../services/api";
 
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -12,8 +13,6 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Spinner from "react-bootstrap/Spinner";
-
-const API_URL = "http://localhost:3001";
 
 export default function CrearPublicacionPage() {
   const { usuario } = useContext(UserContext);

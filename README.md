@@ -1,75 +1,43 @@
 # CIU-antiSocialNet
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend de la red social **UnaHur Anti-Social Net**, desarrollado en React + TypeScript para la materia Construcción de Interfaces de Usuario (UNAHUR).
 
-Currently, two official plugins are available:
+Permite registrarse, iniciar sesión (simulada), ver el feed de publicaciones, ver el detalle con sus comentarios, comentar, consultar el perfil propio y crear publicaciones con imágenes y etiquetas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Requisitos
 
-## React Compiler
+- Node.js 18 o superior
+- La API del backend corriendo en `http://localhost:3001`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Cómo correr en local
 
-## Expanding the ESLint configuration
+1. Levantar el backend (API provista por la cátedra, en la carpeta `backend-api`):
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+   ```bash
+   npm install
+   node seed.js
+   npm start
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+2. En esta carpeta, instalar dependencias y iniciar el frontend:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+3. Abrir `http://localhost:5173` en el navegador.
 
-```
+Para ingresar, usar un usuario registrado y la contraseña `123456`.
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## API utilizada
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+URL: `http://localhost:3001`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Endpoints: `GET/POST /users`, `GET/POST /posts`, `GET /posts/:id`, `GET /comments/post/:postId`, `POST /comments`, `GET /tags`, `GET/POST /postimages`.
 
-```
+Backend de la cátedra: https://github.com/lucasfigarola/backend-api
+
+## Tecnologías
+
+React, TypeScript, Vite, react-router-dom, Bootstrap y react-bootstrap.

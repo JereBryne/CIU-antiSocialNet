@@ -1,6 +1,5 @@
 import type { Comentario } from "../types/Comentario";
-
-const API_URL = "http://localhost:3001";
+import { API_URL } from "./api";
 
 export async function obtenerComentarios(
   postId: string,

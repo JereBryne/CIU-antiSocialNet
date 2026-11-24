@@ -1,6 +1,5 @@
 import type { Etiqueta } from "../types/Etiqueta";
-
-const API_URL = "http://localhost:3001";
+import { API_URL } from "./api";
 
 export async function obtenerEtiquetas(): Promise<Etiqueta[]> {
   const respuesta = await fetch(`${API_URL}/tags`);
