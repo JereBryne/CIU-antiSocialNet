@@ -1,7 +1,18 @@
 import { useState, useContext } from "react";
+
 import { useNavigate, Link } from "react-router-dom";
 import { crearUsuario } from "../services/usuarioService";
 import { UserContext } from "../context/UserContext";
+
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Card from "react-bootstrap/Card";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
+import Spinner from "react-bootstrap/Spinner";
+
 
 export default function RegistroPage() {
   const [nickName, setNickName] = useState<string>("");
@@ -41,41 +52,102 @@ export default function RegistroPage() {
 
   return (
     <main>
-      <h1>Registro de Usuario</h1>
+     <Container className="py-5">
+        <Row className="justify-content-center">
+          <Col xs={12} sm={10} md={8} lg={5} xl={4}>
+            <Card className="shadow-sm">
+              <Card.Body className="p-4">
+                <Card.Title
+                  as="h1"
+                  className="text-center mb-4"
+                >
+                  Registro de usuario
+                </Card.Title>
 
-      <form onSubmit={manejarSubmit}>
-        <div>
-          <label htmlFor="nickName">NickName:</label>
-          <input
-            id="nickName"
-            type="text"
-            value={nickName}
-            onChange={(e) => setNickName(e.target.value)}
-            placeholder="Ej: luna"
-          />
-        </div>
+                {/* Mensaje de error */}
+                {error && (
+                  <Alert variant="danger" role="alert">
+                    {error}
+                  </Alert>
+                )}
 
-        <div>
-          <label htmlFor="email">Email:</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Ej: luna@example.com"
-          />
-        </div>
+                <Form onSubmit={manejarSubmit}>
+                  {/* Nickname */}
+                  <Form.Group
+                    className="mb-3"
+                    controlId="nickName"
+                  >
+                    <Form.Label>
+                      Nombre de usuario
+                    </Form.Label>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+                    <Form.Control
+                      type="text"
+                      value={nickName}
+                      onChange={(e) =>
+                        setNickName(e.target.value)
+                      }
+                      placeholder="Ej: luna"
+                      disabled={cargando}
+                    />
+                  </Form.Group>
 
-        <button type="submit" disabled={cargando}>
-          {cargando ? "Registrando..." : "Crear cuenta"}
-        </button>
-      </form>
+                  {/* Email */}
+                  <Form.Group
+                    className="mb-4"
+                    controlId="email"
+                  >
+                    <Form.Label>Email</Form.Label>
 
-      <p>
-        ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión acá</Link>
-      </p>
+                    <Form.Control
+                      type="email"
+                      value={email}
+                      onChange={(e) =>
+                        setEmail(e.target.value)
+                      }
+                      placeholder="Ej: luna@example.com"
+                      disabled={cargando}
+                    />
+                  </Form.Group>
+
+                  {/* Botón Crear cuenta */}
+                  <div className="d-grid">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={cargando}
+                    >
+                      {cargando ? (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            className="me-2"
+                            aria-hidden="true"
+                          />
+                          Registrando...
+                        </>
+                      ) : (
+                        "Crear cuenta"
+                      )}
+                    </Button>
+                  </div>
+                </Form>
+
+                <hr className="my-4" />
+
+                <p className="text-center mb-0">
+                  ¿Ya tenés cuenta?{" "}
+                  <Link to="/login">
+                    Iniciá sesión acá
+                  </Link>
+                </p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </main>
   );
 }

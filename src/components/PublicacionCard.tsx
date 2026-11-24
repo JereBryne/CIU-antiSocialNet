@@ -5,6 +5,10 @@ import { obtenerImagenes } from "../services/imagenService";
 import { obtenerComentarios } from "../services/comentarioService";
 import type { ImagenPublicacion } from "../types/ImagenPublicacion";
 
+import Card from "react-bootstrap/Card";
+import Badge from "react-bootstrap/Badge";
+import Alert from "react-bootstrap/Alert";
+
 type PublicacionCardProps = {
   publicacion: Publicacion;
 };
@@ -33,28 +37,83 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     cargarDatos();
   }, [id]);
   return (
-    <article>
-      <h2>{publicacion.User.nickName}</h2>
-      <p>{publicacion.description}</p>
-
-      <ul>
-        {publicacion.Tags.map((etiqueta) => (
-          <li key={etiqueta.id}> {etiqueta.name}</li>
-        ))}
-      </ul>
-      {imagenes.map((imagen, indice) => (
-        <img
-          key={imagen.id}
-          src={imagen.url}
-          alt={`Imagen ${indice + 1} de la publicación`}
+    <Card className="h-100 shadow-sm">
+      {/* Imagen principal de la publicación */}
+      {imagenes.length > 0 && (
+        <Card.Img
+          variant="top"
+          src={imagenes[0].url}
+          alt="Imagen principal de la publicación"
+          className="img-fluid"
         />
-      ))}
-      {error && <p role="alert">{error}</p>}
-      {cantidadComentarios !== null && (
-        <p>Comentarios: {cantidadComentarios}</p>
       )}
-      {!error && cantidadComentarios === null && <p>Cargando comentarios...</p>}
-      <Link to={`/post/${publicacion.id}`}>VEr mas</Link>
-    </article>
+
+      <Card.Body className="d-flex flex-column">
+        {/* Usuario que realizó la publicación */}
+        <Card.Title>
+          {publicacion.User.nickName}
+        </Card.Title>
+
+        {/* Descripción de la publicación */}
+        <Card.Text>
+          {publicacion.description}
+        </Card.Text>
+
+        {/* Etiquetas */}
+        <div className="mb-3">
+          {publicacion.Tags.map((etiqueta) => (
+            <Badge
+              key={etiqueta.id}
+              bg="secondary"
+              className="me-2"
+            >
+              #{etiqueta.name}
+            </Badge>
+          ))}
+        </div>
+
+        {/* Si existen más imágenes, lo informamos */}
+        {imagenes.length > 1 && (
+          <Card.Text className="text-muted">
+            + {imagenes.length - 1}{" "}
+            {imagenes.length - 1 === 1
+              ? "imagen más"
+              : "imágenes más"}
+          </Card.Text>
+        )}
+
+        {/* Mensaje de error */}
+        {error && (
+          <Alert variant="warning" role="alert">
+            {error}
+          </Alert>
+        )}
+
+        {/* Cantidad de comentarios */}
+        {cantidadComentarios !== null ? (
+          <Card.Text className="text-muted">
+            Comentarios: {cantidadComentarios}
+          </Card.Text>
+        ) : (
+          !error && (
+            <Card.Text className="text-muted">
+              Cargando comentarios...
+            </Card.Text>
+          )
+        )}
+
+        {/* Enlace al detalle completo */}
+        <div className="mt-auto">
+          <Link
+            to={`/post/${publicacion.id}`}
+            className="btn btn-primary"
+          >
+            Ver más
+          </Link>
+        </div>
+      </Card.Body>
+    </Card>
   );
 }
+
+

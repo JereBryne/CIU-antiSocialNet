@@ -12,6 +12,16 @@ import {
 } from "../services/comentarioService";
 import { UserContext } from "../context/UserContext";
 
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Card from "react-bootstrap/Card";
+import Badge from "react-bootstrap/Badge";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
+import Spinner from "react-bootstrap/Spinner";
+
 export default function DetallePublicacionPage() {
   const { id } = useParams();
   const { usuario } = useContext(UserContext);
@@ -76,61 +86,196 @@ export default function DetallePublicacionPage() {
     }
   }
 
-  if (error) return <p role="alert">{error}</p>;
-  if (!publicacion) return <p>Cargando publicación...</p>;
+  if (error) {
+    return (
+      <Container className="py-5">
+        <Alert variant="danger" role="alert">
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!publicacion) {
+    return (
+      <Container className="py-5 text-center">
+        <Spinner animation="border" role="status" />
+
+        <p className="mt-3">
+          Cargando publicación...
+        </p>
+      </Container>
+    );
+  }
 
   return (
     <main>
-      <h1>Publicación de {publicacion.User.nickName}</h1>
-      <p>{publicacion.description}</p>
+      <Container className="py-5">
+        <Row className="justify-content-center">
+          <Col xs={12} lg={9} xl={8}>
+            {/* Publicación */}
+            <Card className="shadow-sm mb-4">
+              <Card.Body className="p-4">
+                <Card.Title as="h1" className="h2 mb-3">
+                  Publicación de{" "}
+                  {publicacion.User.nickName}
+                </Card.Title>
 
-      <ul>
-        {publicacion.Tags.map((etiqueta) => (
-          <li key={etiqueta.id}>{etiqueta.name}</li>
-        ))}
-      </ul>
+                <Card.Text className="fs-5">
+                  {publicacion.description}
+                </Card.Text>
 
-      {imagenes.map((imagen, indice) => (
-        <img
-          key={imagen.id}
-          src={imagen.url}
-          alt={`Imagen ${indice + 1} de la publicación`}
-        />
-      ))}
+                {/* Etiquetas */}
+                <div className="mb-4">
+                  {publicacion.Tags.map((etiqueta) => (
+                    <Badge
+                      key={etiqueta.id}
+                      bg="secondary"
+                      className="me-2"
+                    >
+                      #{etiqueta.name}
+                    </Badge>
+                  ))}
+                </div>
 
-      <h2>Comentarios ({comentarios.length})</h2>
-      {comentarios.length === 0 && <p>Todavía no hay comentarios.</p>}
-      <ul>
-        {comentarios.map((comentario) => (
-          <li key={comentario.id}>
-            <strong>{comentario.User?.nickName ?? "Usuario"}: </strong>
-            {comentario.content}
-          </li>
-        ))}
-      </ul>
+                {/* Imágenes */}
+                {imagenes.length > 0 && (
+                  <Row className="g-3">
+                    {imagenes.map((imagen, indice) => (
+                      <Col
+                        key={imagen.id}
+                        xs={12}
+                        md={imagenes.length > 1 ? 6 : 12}
+                      >
+                        <img
+                          src={imagen.url}
+                          alt={`Imagen ${indice + 1} de la publicación`}
+                          className="img-fluid rounded w-100"
+                        />
+                      </Col>
+                    ))}
+                  </Row>
+                )}
+              </Card.Body>
+            </Card>
 
-      {usuario ? (
-        <form onSubmit={manejarComentarioSubmit}>
-          <div>
-            <label htmlFor="nuevoComentario">Agregar un comentario:</label>
-            <textarea
-              id="nuevoComentario"
-              rows={3}
-              value={nuevoComentario}
-              onChange={(e) => setNuevoComentario(e.target.value)}
-              placeholder="Escribí tu comentario..."
-            />
-          </div>
-          {errorComentario && <p role="alert">{errorComentario}</p>}
-          <button type="submit" disabled={enviandoComentario}>
-            {enviandoComentario ? "Enviando..." : "Comentar"}
-          </button>
-        </form>
-      ) : (
-        <p>
-          <Link to="/login">Iniciá sesión</Link> para dejar un comentario.
-        </p>
-      )}
+            {/* Comentarios */}
+            <Card className="shadow-sm mb-4">
+              <Card.Body className="p-4">
+                <Card.Title as="h2" className="h4 mb-4">
+                  Comentarios ({comentarios.length})
+                </Card.Title>
+
+                {comentarios.length === 0 ? (
+                  <Alert
+                    variant="secondary"
+                    className="mb-0"
+                  >
+                    Todavía no hay comentarios.
+                  </Alert>
+                ) : (
+                  <div className="d-flex flex-column gap-3">
+                    {comentarios.map((comentario) => (
+                      <div
+                        key={comentario.id}
+                        className="border rounded p-3 bg-light"
+                      >
+                        <strong>
+                          {comentario.User?.nickName ??
+                            "Usuario"}
+                          :
+                        </strong>{" "}
+                        {comentario.content}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
+
+            {/* Formulario de comentario */}
+            {usuario ? (
+              <Card className="shadow-sm">
+                <Card.Body className="p-4">
+                  <Card.Title
+                    as="h2"
+                    className="h4 mb-3"
+                  >
+                    Agregar un comentario
+                  </Card.Title>
+
+                  {errorComentario && (
+                    <Alert
+                      variant="danger"
+                      role="alert"
+                    >
+                      {errorComentario}
+                    </Alert>
+                  )}
+
+                  <Form
+                    onSubmit={
+                      manejarComentarioSubmit
+                    }
+                  >
+                    <Form.Group
+                      className="mb-3"
+                      controlId="nuevoComentario"
+                    >
+                      <Form.Label>
+                        Comentario
+                      </Form.Label>
+
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={nuevoComentario}
+                        onChange={(e) =>
+                          setNuevoComentario(
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Escribí tu comentario..."
+                        disabled={enviandoComentario}
+                      />
+                    </Form.Group>
+
+                    <div className="d-grid d-sm-block">
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        disabled={enviandoComentario}
+                      >
+                        {enviandoComentario ? (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              className="me-2"
+                              aria-hidden="true"
+                            />
+                            Enviando...
+                          </>
+                        ) : (
+                          "Comentar"
+                        )}
+                      </Button>
+                    </div>
+                  </Form>
+                </Card.Body>
+              </Card>
+            ) : (
+              <Alert variant="info">
+                <Link to="/login">
+                  Iniciá sesión
+                </Link>{" "}
+                para dejar un comentario.
+              </Alert>
+            )}
+          </Col>
+        </Row>
+      </Container>
     </main>
   );
 }

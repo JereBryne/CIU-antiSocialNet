@@ -5,6 +5,12 @@ import type { Etiqueta } from "../types/Etiqueta";
 import { obtenerPublicaciones } from "../services/publicacionService";
 import { obtenerEtiquetas } from "../services/etiquetaService";
 
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
+
 export default function HomePage() {
   const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
   const [etiquetas, setEtiquetas] = useState<Etiqueta[]>([]);
@@ -54,53 +60,113 @@ export default function HomePage() {
 
   return (
     <main>
-      <header>
-        <h1>UnaHur Anti-Social Net</h1>
-        <p>El espacio de la comunidad universitaria para compartir ideas sin algoritmos.</p>
-      </header>
+      {/* Presentación principal */}
+      <section className="bg-light py-5 mb-4">
+        <Container>
+          <Row className="justify-content-center">
+            <Col lg={9} className="text-center">
+              <h1 className="display-4 fw-bold">
+                UnaHur Anti-Social Net
+              </h1>
 
-      <section>
-        <h2>Sobre nosotros</h2>
-        <p>
-          Proyecto desarrollado para Construcción de Interfaces de Usuario (UNAHUR).
-          Publicá tus reflexiones, compartí imágenes y debatí con otros estudiantes.
-        </p>
+              <p className="lead mb-0">
+                El espacio de la comunidad universitaria
+                para compartir ideas sin algoritmos.
+              </p>
+            </Col>
+          </Row>
+        </Container>
       </section>
 
-      <section>
-        <h2>Filtrar por etiqueta</h2>
-        <div>
-          <button
-            type="button"
-            onClick={() => setEtiquetaSeleccionada(null)}
-            disabled={etiquetaSeleccionada === null}
-          >
-            Todas
-          </button>
-          {etiquetas.map((etiqueta) => (
-            <button
-              key={etiqueta.id}
+      <Container className="pb-5">
+        {/* Sobre nosotros */}
+        <section className="mb-5">
+          <Row className="justify-content-center">
+            <Col lg={9} className="text-center">
+              <h2 className="mb-3">
+                Sobre nosotros
+              </h2>
+
+              <p className="text-muted">
+                Proyecto desarrollado para Construcción de
+                Interfaces de Usuario (UNAHUR). Publicá tus
+                reflexiones, compartí imágenes y debatí con
+                otros estudiantes.
+              </p>
+            </Col>
+          </Row>
+        </section>
+
+        {/* Filtros */}
+        <section className="mb-5">
+          <h2 className="h4 mb-3">
+            Filtrar por etiqueta
+          </h2>
+
+          <div className="d-flex flex-wrap gap-2">
+            <Button
               type="button"
-              onClick={() => setEtiquetaSeleccionada(etiqueta.id)}
-              disabled={etiquetaSeleccionada === etiqueta.id}
-              style={{ marginLeft: "8px" }}
+              variant={
+                etiquetaSeleccionada === null
+                  ? "primary"
+                  : "outline-primary"
+              }
+              onClick={() =>
+                setEtiquetaSeleccionada(null)
+              }
             >
-              #{etiqueta.name}
-            </button>
-          ))}
-        </div>
-      </section>
+              Todas
+            </Button>
 
-      <section>
-        <h2>Publicaciones recientes</h2>
-        {publicacionesFiltradas.length === 0 ? (
-          <p>No hay publicaciones para mostrar.</p>
-        ) : (
-          publicacionesFiltradas.map((publicacion) => (
-            <PublicacionCard key={publicacion.id} publicacion={publicacion} />
-          ))
-        )}
-      </section>
+            {etiquetas.map((etiqueta) => (
+              <Button
+                key={etiqueta.id}
+                type="button"
+                variant={
+                  etiquetaSeleccionada === etiqueta.id
+                    ? "primary"
+                    : "outline-primary"
+                }
+                onClick={() =>
+                  setEtiquetaSeleccionada(etiqueta.id)
+                }
+              >
+                #{etiqueta.name}
+              </Button>
+            ))}
+          </div>
+        </section>
+
+        {/* Publicaciones */}
+        <section>
+          <h2 className="mb-4">
+            Publicaciones recientes
+          </h2>
+
+          {publicacionesFiltradas.length === 0 ? (
+            <Alert variant="secondary">
+              No hay publicaciones para mostrar.
+            </Alert>
+          ) : (
+            <Row className="g-4">
+              {publicacionesFiltradas.map(
+                (publicacion) => (
+                  <Col
+                    key={publicacion.id}
+                    xs={12}
+                    md={6}
+                    lg={4}
+                  >
+                    <PublicacionCard
+                      publicacion={publicacion}
+                    />
+                  </Col>
+                ),
+              )}
+            </Row>
+          )}
+        </section>
+      </Container>
     </main>
   );
 }

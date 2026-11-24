@@ -4,6 +4,15 @@ import { UserContext } from "../context/UserContext";
 import { obtenerEtiquetas } from "../services/etiquetaService";
 import type { Etiqueta } from "../types/Etiqueta";
 
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Card from "react-bootstrap/Card";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
+import Spinner from "react-bootstrap/Spinner";
+
 const API_URL = "http://localhost:3001";
 
 export default function CrearPublicacionPage() {
@@ -120,70 +129,186 @@ export default function CrearPublicacionPage() {
 
   return (
     <main>
-      <h1>Nueva Publicación</h1>
+      <Container className="py-5">
+        <Row className="justify-content-center">
+          <Col xs={12} md={10} lg={8} xl={7}>
+            <Card className="shadow-sm">
+              <Card.Body className="p-4 p-md-5">
+                <Card.Title
+                  as="h1"
+                  className="text-center mb-4"
+                >
+                  Nueva publicación
+                </Card.Title>
 
-      <form onSubmit={manejarSubmit}>
-        <div>
-          <label htmlFor="description">Descripción (obligatoria):</label>
-          <textarea
-            id="description"
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="¿Qué estás pensando?"
-          />
-        </div>
+                <p className="text-muted text-center mb-4">
+                  Compartí una idea con la comunidad.
+                </p>
 
-        <div>
-          <p>Etiquetas:</p>
-          {etiquetasDisponibles.length === 0 ? (
-            <p>Cargando etiquetas...</p>
-          ) : (
-            <div>
-              {etiquetasDisponibles.map((etiqueta) => (
-                <label key={etiqueta.id} style={{ marginRight: "12px" }}>
-                  <input
-                    type="checkbox"
-                    checked={etiquetasSeleccionadas.includes(etiqueta.id)}
-                    onChange={() => alternarEtiqueta(etiqueta.id)}
-                  />
-                  {etiqueta.name}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
+                {error && (
+                  <Alert variant="danger" role="alert">
+                    {error}
+                  </Alert>
+                )}
 
-        <div>
-          <p>URLs de imágenes (opcional):</p>
-          {urlsImagenes.map((url, indice) => (
-            <div key={indice} style={{ marginBottom: "8px" }}>
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => actualizarUrlImagen(indice, e.target.value)}
-                placeholder="https://placeholder.pics/svg/300x400/DEDEDE/555555/Imagen%201"
-              />
-              {urlsImagenes.length > 1 && (
-                <button type="button" onClick={() => quitarCampoImagen(indice)}>
-                  Quitar
-                </button>
-              )}
-            </div>
-          ))}
-          <button type="button" onClick={agregarCampoImagen}>
-            + Agregar otra imagen
-          </button>
-        </div>
+                <Form onSubmit={manejarSubmit}>
+                  {/* Descripción */}
+                  <Form.Group
+                    className="mb-4"
+                    controlId="description"
+                  >
+                    <Form.Label className="fw-semibold">
+                      Descripción
+                    </Form.Label>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+                    <Form.Control
+                      as="textarea"
+                      rows={4}
+                      value={description}
+                      onChange={(e) =>
+                        setDescription(e.target.value)
+                      }
+                      placeholder="¿Qué estás pensando?"
+                      disabled={enviando}
+                    />
 
-        <div style={{ marginTop: "16px" }}>
-          <button type="submit" disabled={enviando}>
-            {enviando ? "Publicando..." : "Publicar"}
-          </button>
-        </div>
-      </form>
+                    <Form.Text muted>
+                      La descripción es obligatoria.
+                    </Form.Text>
+                  </Form.Group>
+
+                  {/* Etiquetas */}
+                  <div className="mb-4">
+                    <p className="fw-semibold mb-2">
+                      Etiquetas
+                    </p>
+
+                    {etiquetasDisponibles.length === 0 ? (
+                      <div className="d-flex align-items-center gap-2">
+                        <Spinner
+                          animation="border"
+                          size="sm"
+                        />
+                        <span className="text-muted">
+                          Cargando etiquetas...
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="d-flex flex-wrap gap-3">
+                        {etiquetasDisponibles.map(
+                          (etiqueta) => (
+                            <Form.Check
+                              key={etiqueta.id}
+                              type="checkbox"
+                              id={`etiqueta-${etiqueta.id}`}
+                              label={`#${etiqueta.name}`}
+                              checked={etiquetasSeleccionadas.includes(
+                                etiqueta.id,
+                              )}
+                              onChange={() =>
+                                alternarEtiqueta(
+                                  etiqueta.id,
+                                )
+                              }
+                              disabled={enviando}
+                            />
+                          ),
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <hr className="my-4" />
+
+                  {/* Imágenes */}
+                  <div className="mb-4">
+                    <p className="fw-semibold mb-1">
+                      URLs de imágenes
+                    </p>
+
+                    <p className="text-muted small">
+                      Las imágenes son opcionales. Podés
+                      agregar más de una.
+                    </p>
+
+                    {urlsImagenes.map((url, indice) => (
+                      <Row
+                        key={indice}
+                        className="g-2 mb-2"
+                      >
+                        <Col>
+                          <Form.Control
+                            type="url"
+                            value={url}
+                            onChange={(e) =>
+                              actualizarUrlImagen(
+                                indice,
+                                e.target.value,
+                              )
+                            }
+                            placeholder="https://..."
+                            disabled={enviando}
+                          />
+                        </Col>
+
+                        {urlsImagenes.length > 1 && (
+                          <Col xs="auto">
+                            <Button
+                              type="button"
+                              variant="outline-danger"
+                              onClick={() =>
+                                quitarCampoImagen(indice)
+                              }
+                              disabled={enviando}
+                            >
+                              Quitar
+                            </Button>
+                          </Col>
+                        )}
+                      </Row>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline-secondary"
+                      className="mt-2"
+                      onClick={agregarCampoImagen}
+                      disabled={enviando}
+                    >
+                      + Agregar otra imagen
+                    </Button>
+                  </div>
+
+                  {/* Publicar */}
+                  <div className="d-grid">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      disabled={enviando}
+                    >
+                      {enviando ? (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            className="me-2"
+                            aria-hidden="true"
+                          />
+                          Publicando...
+                        </>
+                      ) : (
+                        "Publicar"
+                      )}
+                    </Button>
+                  </div>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </main>
   );
 }
