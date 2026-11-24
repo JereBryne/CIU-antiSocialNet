@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { obtenerEtiquetas } from "../services/etiquetaService";
 import type { Etiqueta } from "../types/Etiqueta";
-import { API_URL } from "../services/api";
+import { crearPublicacion } from "../services/publicacionService";
+import { crearImagen } from "../services/imagenService";
 
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -23,12 +24,16 @@ export default function CrearPublicacionPage() {
   const [etiquetasSeleccionadas, setEtiquetasSeleccionadas] = useState<number[]>([]);
   const [urlsImagenes, setUrlsImagenes] = useState<string[]>([""]);
   const [error, setError] = useState<string>("");
+  const [descripcionInvalida, setDescripcionInvalida] = useState<boolean>(false);
+  const [urlsInvalidas, setUrlsInvalidas] = useState<number[]>([]);
+  const [cargandoEtiquetas, setCargandoEtiquetas] = useState<boolean>(true);
   const [enviando, setEnviando] = useState<boolean>(false);
 
   useEffect(() => {
     obtenerEtiquetas()
       .then((datos) => setEtiquetasDisponibles(datos))
-      .catch(() => setError("No se pudieron cargar las etiquetas disponibles."));
+      .catch(() => setError("No se pudieron cargar las etiquetas disponibles."))
+      .finally(() => setCargandoEtiquetas(false));
   }, []);
 
   const alternarEtiqueta = (idEtiqueta: number) => {
@@ -43,6 +48,8 @@ export default function CrearPublicacionPage() {
     const nuevasUrls = [...urlsImagenes];
     nuevasUrls[indice] = valor;
     setUrlsImagenes(nuevasUrls);
+    // Al corregir el campo, sacamos su mensaje de error
+    setUrlsInvalidas(urlsInvalidas.filter((i) => i !== indice));
   };
 
   const agregarCampoImagen = () => {
@@ -52,6 +59,17 @@ export default function CrearPublicacionPage() {
   const quitarCampoImagen = (indice: number) => {
     const nuevasUrls = urlsImagenes.filter((_, i) => i !== indice);
     setUrlsImagenes(nuevasUrls);
+    setUrlsInvalidas([]);
+  };
+
+  // Una URL es válida si el navegador la puede interpretar y empieza con http o https
+  const esUrlValida = (texto: string) => {
+    try {
+      const url = new URL(texto);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
   };
 
   const manejarSubmit = async (e: React.FormEvent) => {
@@ -63,8 +81,16 @@ export default function CrearPublicacionPage() {
       return;
     }
 
-    if (!description.trim()) {
-      setError("La descripción es obligatoria.");
+    const descripcionVacia = !description.trim();
+    const indicesInvalidos = urlsImagenes
+      .map((url, indice) => ({ url: url.trim(), indice }))
+      .filter(({ url }) => url.length > 0 && !esUrlValida(url))
+      .map(({ indice }) => indice);
+
+    setDescripcionInvalida(descripcionVacia);
+    setUrlsInvalidas(indicesInvalidos);
+
+    if (descripcionVacia || indicesInvalidos.length > 0) {
       return;
     }
 
@@ -72,49 +98,31 @@ export default function CrearPublicacionPage() {
       setEnviando(true);
 
       // 1. Crear publicación (POST /posts)
-      const respPost = await fetch(`${API_URL}/posts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          description: description.trim(),
-          userId: usuario.id,
-          UserId: usuario.id,
-          tagIds: etiquetasSeleccionadas,
-        }),
-      });
-
-      if (!respPost.ok) {
-        throw new Error("No se pudo crear la publicación.");
-      }
-
-      const postCreado = await respPost.json();
+      const postCreado = await crearPublicacion(
+        description.trim(),
+        usuario.id,
+        etiquetasSeleccionadas,
+      );
 
       // 2. Asociar imágenes una por una (POST /postimages)
       const urlsValidas = urlsImagenes
         .map((url) => url.trim())
         .filter((url) => url.length > 0);
 
-      for (const url of urlsValidas) {
-        const respImg = await fetch(`${API_URL}/postimages`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url,
-            postId: postCreado.id,
-            PostId: postCreado.id,
-          }),
-        });
+      const imagenesFallidas: string[] = [];
 
-        if (!respImg.ok) {
-          console.error(`Error al asociar la imagen: ${url}`);
+      for (const url of urlsValidas) {
+        try {
+          await crearImagen(url, postCreado.id);
+        } catch {
+          imagenesFallidas.push(url);
         }
       }
 
-      navigate("/perfil");
+      // 3. Ir al perfil, avisando si alguna imagen no se pudo guardar
+      navigate("/perfil", {
+        state: { publicacionCreada: true, imagenesFallidas },
+      });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -150,7 +158,7 @@ export default function CrearPublicacionPage() {
                   </Alert>
                 )}
 
-                <Form onSubmit={manejarSubmit}>
+                <Form onSubmit={manejarSubmit} noValidate>
                   {/* Descripción */}
                   <Form.Group
                     className="mb-4"
@@ -164,16 +172,18 @@ export default function CrearPublicacionPage() {
                       as="textarea"
                       rows={4}
                       value={description}
-                      onChange={(e) =>
-                        setDescription(e.target.value)
-                      }
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                        setDescripcionInvalida(false);
+                      }}
                       placeholder="¿Qué estás pensando?"
+                      isInvalid={descripcionInvalida}
                       disabled={enviando}
                     />
 
-                    <Form.Text muted>
+                    <Form.Control.Feedback type="invalid">
                       La descripción es obligatoria.
-                    </Form.Text>
+                    </Form.Control.Feedback>
                   </Form.Group>
 
                   {/* Etiquetas */}
@@ -182,7 +192,7 @@ export default function CrearPublicacionPage() {
                       Etiquetas
                     </p>
 
-                    {etiquetasDisponibles.length === 0 ? (
+                    {cargandoEtiquetas ? (
                       <div className="d-flex align-items-center gap-2">
                         <Spinner
                           animation="border"
@@ -192,6 +202,10 @@ export default function CrearPublicacionPage() {
                           Cargando etiquetas...
                         </span>
                       </div>
+                    ) : etiquetasDisponibles.length === 0 ? (
+                      <p className="text-muted small mb-0">
+                        No hay etiquetas disponibles.
+                      </p>
                     ) : (
                       <div className="d-flex flex-wrap gap-3">
                         {etiquetasDisponibles.map(
@@ -246,8 +260,12 @@ export default function CrearPublicacionPage() {
                               )
                             }
                             placeholder="https://..."
+                            isInvalid={urlsInvalidas.includes(indice)}
                             disabled={enviando}
                           />
+                          <Form.Control.Feedback type="invalid">
+                            Ingresá una URL válida que empiece con http:// o https://
+                          </Form.Control.Feedback>
                         </Col>
 
                         {urlsImagenes.length > 1 && (

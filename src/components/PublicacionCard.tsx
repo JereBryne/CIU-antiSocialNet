@@ -20,14 +20,17 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     null,
   );
   const [error, setError] = useState("");
+  const [imagenRota, setImagenRota] = useState(false);
 
   useEffect(() => {
     async function cargarDatos() {
       try {
-        const imagenesDelPost = await obtenerImagenes(id);
+        // Pedimos imágenes y comentarios al mismo tiempo
+        const [imagenesDelPost, comentarios] = await Promise.all([
+          obtenerImagenes(id),
+          obtenerComentarios(id),
+        ]);
         setImagenes(imagenesDelPost);
-
-        const comentarios = await obtenerComentarios(id);
         setCantidadComentarios(comentarios.length);
       } catch {
         setError("No se pudieron cargar todos los datos de la publicación");
@@ -39,12 +42,13 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
   return (
     <Card className="h-100 shadow-sm card-hover">
       {/* Imagen principal de la publicación */}
-      {imagenes.length > 0 && (
+      {imagenes.length > 0 && !imagenRota && (
         <Card.Img
           variant="top"
           src={imagenes[0].url}
           alt="Imagen principal de la publicación"
           className="post-card-img"
+          onError={() => setImagenRota(true)}
         />
       )}
 

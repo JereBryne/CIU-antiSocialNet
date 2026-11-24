@@ -52,7 +52,15 @@ export default function HomePage() {
         );
 
   if (error) {
-    return <p role="alert">{error}</p>;
+    return (
+      <main>
+        <Container className="py-5">
+          <Alert variant="danger" role="alert">
+            {error}. Revisá que la API esté corriendo en http://localhost:3001.
+          </Alert>
+        </Container>
+      </main>
+    );
   }
 
   return (
@@ -62,7 +70,7 @@ export default function HomePage() {
         <Container>
           <Row className="justify-content-center">
             <Col lg={9} className="text-center">
-              <h1 className=" display-4 fw-bold">
+              <h1 className="display-4 fw-bold">
                 UnaHur Anti-Social Net
               </h1>
 

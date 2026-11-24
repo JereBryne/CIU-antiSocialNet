@@ -34,6 +34,8 @@ export default function DetallePublicacionPage() {
   const [nuevoComentario, setNuevoComentario] = useState("");
   const [errorComentario, setErrorComentario] = useState("");
   const [enviandoComentario, setEnviandoComentario] = useState(false);
+  const [comentarioInvalido, setComentarioInvalido] = useState(false);
+  const [comentarioEnviado, setComentarioEnviado] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -43,15 +45,20 @@ export default function DetallePublicacionPage() {
       setError("");
 
       try {
-        const datos = await obtenerPublicacion(postId);
-        const imagenesDelPost = await obtenerImagenes(postId);
-        const comentariosDelPost = await obtenerComentarios(postId);
+        // Las tres consultas son independientes, así que van en paralelo
+        const [datos, imagenesDelPost, comentariosDelPost] = await Promise.all([
+          obtenerPublicacion(postId),
+          obtenerImagenes(postId),
+          obtenerComentarios(postId),
+        ]);
 
         setPublicacion(datos);
         setImagenes(imagenesDelPost);
         setComentarios(comentariosDelPost);
-      } catch {
-        setError("No se pudo cargar la publicación");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "No se pudo cargar la publicación",
+        );
       }
     }
 
@@ -68,14 +75,17 @@ export default function DetallePublicacionPage() {
     }
 
     if (!nuevoComentario.trim()) {
-      setErrorComentario("El comentario no puede estar vacío.");
+      setComentarioInvalido(true);
       return;
     }
+
+    setComentarioInvalido(false);
 
     try {
       setEnviandoComentario(true);
       await crearComentario(nuevoComentario.trim(), Number(id), usuario.id);
       setNuevoComentario("");
+      setComentarioEnviado(true);
 
       const comentariosActualizados = await obtenerComentarios(id);
       setComentarios(comentariosActualizados);
@@ -92,6 +102,9 @@ export default function DetallePublicacionPage() {
         <Alert variant="danger" role="alert">
           {error}
         </Alert>
+        <Link to="/" className="btn btn-outline-secondary">
+          ← Volver al inicio
+        </Link>
       </Container>
     );
   }
@@ -113,6 +126,10 @@ export default function DetallePublicacionPage() {
       <Container className="py-5">
         <Row className="justify-content-center">
           <Col xs={12} lg={9} xl={8}>
+            <Link to="/" className="btn btn-outline-secondary mb-4">
+              ← Volver al inicio
+            </Link>
+
             {/* Publicación */}
             <Card className="shadow-sm mb-4">
               <Card.Body className="p-4">
@@ -151,6 +168,10 @@ export default function DetallePublicacionPage() {
                           src={imagen.url}
                           alt={`Imagen ${indice + 1} de la publicación`}
                           className="img-fluid rounded w-100"
+                          onError={(e) => {
+                            // Si la URL no carga, ocultamos la imagen rota
+                            e.currentTarget.style.display = "none";
+                          }}
                         />
                       </Col>
                     ))}
@@ -204,6 +225,16 @@ export default function DetallePublicacionPage() {
                     Agregar un comentario
                   </Card.Title>
 
+                  {comentarioEnviado && (
+                    <Alert
+                      variant="success"
+                      dismissible
+                      onClose={() => setComentarioEnviado(false)}
+                    >
+                      ¡Comentario publicado!
+                    </Alert>
+                  )}
+
                   {errorComentario && (
                     <Alert
                       variant="danger"
@@ -217,6 +248,7 @@ export default function DetallePublicacionPage() {
                     onSubmit={
                       manejarComentarioSubmit
                     }
+                    noValidate
                   >
                     <Form.Group
                       className="mb-3"
@@ -230,14 +262,18 @@ export default function DetallePublicacionPage() {
                         as="textarea"
                         rows={3}
                         value={nuevoComentario}
-                        onChange={(e) =>
-                          setNuevoComentario(
-                            e.target.value,
-                          )
-                        }
+                        onChange={(e) => {
+                          setNuevoComentario(e.target.value);
+                          setComentarioEnviado(false);
+                          setComentarioInvalido(false);
+                        }}
                         placeholder="Escribí tu comentario..."
+                        isInvalid={comentarioInvalido}
                         disabled={enviandoComentario}
                       />
+                      <Form.Control.Feedback type="invalid">
+                        El comentario no puede estar vacío.
+                      </Form.Control.Feedback>
                     </Form.Group>
 
                     <div className="d-grid d-sm-block">
@@ -267,7 +303,7 @@ export default function DetallePublicacionPage() {
               </Card>
             ) : (
               <Alert variant="info">
-                <Link to="/login">
+                <Link to="/login" state={{ desde: `/post/${id}` }}>
                   Iniciá sesión
                 </Link>{" "}
                 para dejar un comentario.

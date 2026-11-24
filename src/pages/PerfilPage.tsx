@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import PublicacionCard from "../components/PublicacionCard";
 import { obtenerPublicaciones } from "../services/publicacionService";
@@ -18,13 +19,25 @@ export default function PerfilPage() {
   const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+
+  // Si venimos de crear una publicación, mostramos la confirmación
+  const location = useLocation();
+  const publicacionCreada: boolean = location.state?.publicacionCreada ?? false;
+  const imagenesFallidas: string[] = location.state?.imagenesFallidas ?? [];
+  const [mostrarAviso, setMostrarAviso] = useState(publicacionCreada);
+
   useEffect(() => {
     if (usuarioId === undefined) return;
 
     async function cargarPublicaciones(id: number) {
       try {
         const datos = await obtenerPublicaciones(id);
-        setPublicaciones(datos);
+        // Las más nuevas primero, igual que en el inicio
+        const ordenadas = [...datos].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        setPublicaciones(ordenadas);
       } catch {
         setError("No se pudieron cargar tus publicaciones");
       } finally {
@@ -72,6 +85,19 @@ export default function PerfilPage() {
             </Card>
           </Col>
         </Row>
+
+        {/* Confirmación de nueva publicación */}
+        {mostrarAviso && (
+          <Alert
+            variant={imagenesFallidas.length > 0 ? "warning" : "success"}
+            dismissible
+            onClose={() => setMostrarAviso(false)}
+          >
+            ¡Publicación creada!
+            {imagenesFallidas.length > 0 &&
+              ` Pero no se pudieron guardar ${imagenesFallidas.length} de las imágenes.`}
+          </Alert>
+        )}
 
         {/* Mis publicaciones */}
         <section>

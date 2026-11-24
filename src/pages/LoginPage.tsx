@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import type { FormEvent } from "react";
 import { obtenerUsuarios } from "../services/usuarioService";
 import { UserContext } from "../context/UserContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -11,38 +11,68 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
+import Spinner from "react-bootstrap/Spinner";
+
+const PASSWORD_FIJA = "123456";
+
+type ErroresLogin = {
+  nickName?: string;
+  password?: string;
+};
 
 export default function LoginPage() {
   const [nickName, setNickName] = useState("");
   const [password, setPassword] = useState("");
+  const [errores, setErrores] = useState<ErroresLogin>({});
   const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(false);
   const { setUsuario } = useContext(UserContext);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Si venía de una ruta protegida, volvemos ahí después de iniciar sesión
+  const desde: string = location.state?.desde ?? "/";
+
+  function validar(): ErroresLogin {
+    const nuevosErrores: ErroresLogin = {};
+
+    if (!nickName.trim()) {
+      nuevosErrores.nickName = "Ingresá tu nombre de usuario.";
+    }
+
+    if (!password) {
+      nuevosErrores.password = "Ingresá tu contraseña.";
+    } else if (password !== PASSWORD_FIJA) {
+      nuevosErrores.password = "Contraseña incorrecta.";
+    }
+
+    return nuevosErrores;
+  }
 
   async function manejarSubmit(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     setError("");
 
-    if (!nickName.trim() || !password.trim()) {
-      setError("Completá el nombre de usuario y la contraseña");
-      return;
-    }
+    const nuevosErrores = validar();
+    setErrores(nuevosErrores);
+    if (Object.keys(nuevosErrores).length > 0) return;
 
-    if (password !== "123456") {
-      setError("Contraseña incorrecta");
-      return;
-    }
     try {
-      const usuraios = await obtenerUsuarios();
-      const usuario = usuraios.find((u) => u.nickName === nickName.trim());
+      setCargando(true);
+      const usuarios = await obtenerUsuarios();
+      const usuario = usuarios.find((u) => u.nickName === nickName.trim());
+
       if (!usuario) {
-        setError("Usuario no encontrado");
+        setErrores({ nickName: "No existe un usuario con ese nombre." });
         return;
       }
+
       setUsuario(usuario);
-      navigate("/", { replace: true });
+      navigate(desde, { replace: true });
     } catch {
-      setError("No se pudieon consultar los usuarios");
+      setError("No se pudieron consultar los usuarios. ¿Está corriendo la API?");
+    } finally {
+      setCargando(false);
     }
   }
 
@@ -66,7 +96,7 @@ export default function LoginPage() {
                   </Alert>
                 )}
 
-                <Form onSubmit={manejarSubmit}>
+                <Form onSubmit={manejarSubmit} noValidate>
                   {/* Nombre de usuario */}
                   <Form.Group
                     className="mb-3"
@@ -83,7 +113,12 @@ export default function LoginPage() {
                         setNickName(evento.target.value)
                       }
                       placeholder="Ingresá tu nombre de usuario"
+                      isInvalid={!!errores.nickName}
+                      disabled={cargando}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errores.nickName}
+                    </Form.Control.Feedback>
                   </Form.Group>
 
                   {/* Contraseña */}
@@ -102,7 +137,12 @@ export default function LoginPage() {
                         setPassword(evento.target.value)
                       }
                       placeholder="Ingresá tu contraseña"
+                      isInvalid={!!errores.password}
+                      disabled={cargando}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errores.password}
+                    </Form.Control.Feedback>
                   </Form.Group>
 
                   {/* Botón */}
@@ -110,11 +150,34 @@ export default function LoginPage() {
                     <Button
                       variant="primary"
                       type="submit"
+                      disabled={cargando}
                     >
-                      Ingresar
+                      {cargando ? (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            className="me-2"
+                            aria-hidden="true"
+                          />
+                          Ingresando...
+                        </>
+                      ) : (
+                        "Ingresar"
+                      )}
                     </Button>
                   </div>
                 </Form>
+
+                <hr className="my-4" />
+
+                <p className="text-center mb-0">
+                  ¿No tenés cuenta?{" "}
+                  <Link to="/registro">
+                    Registrate acá
+                  </Link>
+                </p>
               </Card.Body>
             </Card>
           </Col>
