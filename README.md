@@ -41,3 +41,13 @@ Backend de la cátedra: https://github.com/lucasfigarola/backend-api
 ## Tecnologías
 
 React, TypeScript, Vite, react-router-dom, Bootstrap y react-bootstrap.
+
+## Integrantes
+
+| Nombre y apellido              |      DNI |
+| ------------------------------ | -------: |
+| Sebastián Horacio Diaz         | 34245773 |
+| Nahuel Solano                  | 46118948 |
+| Renzo Santino Dottori Giordano | 44595644 |
+| Magno Tellechea                | 44098748 |
+| Jeremias Markevich             | 43516255 |
