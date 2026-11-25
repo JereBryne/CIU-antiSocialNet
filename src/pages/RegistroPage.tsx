@@ -13,10 +13,15 @@ import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Spinner from "react-bootstrap/Spinner";
 
+type ErroresRegistro = {
+  nickName?: string;
+  email?: string;
+};
 
 export default function RegistroPage() {
   const [nickName, setNickName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [errores, setErrores] = useState<ErroresRegistro>({});
   const [error, setError] = useState<string>("");
   const [cargando, setCargando] = useState<boolean>(false);
 
@@ -27,17 +32,27 @@ export default function RegistroPage() {
     e.preventDefault();
     setError("");
 
-    if (!nickName.trim() || !email.trim()) {
-      setError("Todos los campos son obligatorios.");
-      return;
+    const nuevosErrores: ErroresRegistro = {};
+
+    if (!nickName.trim()) {
+      nuevosErrores.nickName = "El nombre de usuario es obligatorio.";
     }
+
+    if (!email.trim()) {
+      nuevosErrores.email = "El email es obligatorio.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      nuevosErrores.email = "Ingresá un email válido.";
+    }
+
+    setErrores(nuevosErrores);
+    if (Object.keys(nuevosErrores).length > 0) return;
 
     try {
       setCargando(true);
       const usuarioCreado = await crearUsuario(nickName.trim(), email.trim());
 
+      // El UserProvider guarda el usuario en localStorage
       setUsuario(usuarioCreado);
-      localStorage.setItem("usuario", JSON.stringify(usuarioCreado));
       navigate("/");
     } catch (err) {
       if (err instanceof Error) {
@@ -52,7 +67,7 @@ export default function RegistroPage() {
 
   return (
     <main>
-     <Container className="py-5">
+      <Container className="py-5">
         <Row className="justify-content-center">
           <Col xs={12} sm={10} md={8} lg={5} xl={4}>
             <Card className="shadow-sm">
@@ -71,7 +86,7 @@ export default function RegistroPage() {
                   </Alert>
                 )}
 
-                <Form onSubmit={manejarSubmit}>
+                <Form onSubmit={manejarSubmit} noValidate>
                   {/* Nickname */}
                   <Form.Group
                     className="mb-3"
@@ -88,8 +103,12 @@ export default function RegistroPage() {
                         setNickName(e.target.value)
                       }
                       placeholder="Ej: luna"
+                      isInvalid={!!errores.nickName}
                       disabled={cargando}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errores.nickName}
+                    </Form.Control.Feedback>
                   </Form.Group>
 
                   {/* Email */}
@@ -106,8 +125,12 @@ export default function RegistroPage() {
                         setEmail(e.target.value)
                       }
                       placeholder="Ej: luna@example.com"
+                      isInvalid={!!errores.email}
                       disabled={cargando}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errores.email}
+                    </Form.Control.Feedback>
                   </Form.Group>
 
                   {/* Botón Crear cuenta */}

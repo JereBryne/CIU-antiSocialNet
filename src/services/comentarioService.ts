@@ -23,13 +23,7 @@ export async function crearComentario(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      content,
-      postId,
-      PostId: postId,
-      userId,
-      UserId: userId,
-    }),
+    body: JSON.stringify({ content, postId, userId }),
   });
 
   if (!respuesta.ok) {
