@@ -1,6 +1,5 @@
 import type { Usuario } from "../types/Usuario";
-
-const API_URL = "http://localhost:3001";
+import { API_URL } from "./api";
 
 export async function obtenerUsuarios(): Promise<Usuario[]> {
   const respuesta = await fetch(`${API_URL}/users`);

@@ -178,7 +178,7 @@ export default function DetallePublicacionPage() {
                     {comentarios.map((comentario) => (
                       <div
                         key={comentario.id}
-                        className="border rounded p-3 bg-light"
+                        className="border rounded p-3 bg-body-secondary"
                       >
                         <strong>
                           {comentario.User?.nickName ??

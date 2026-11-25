@@ -37,14 +37,14 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     cargarDatos();
   }, [id]);
   return (
-    <Card className="h-100 shadow-sm">
+    <Card className="h-100 shadow-sm card-hover">
       {/* Imagen principal de la publicación */}
       {imagenes.length > 0 && (
         <Card.Img
           variant="top"
           src={imagenes[0].url}
           alt="Imagen principal de la publicación"
-          className="img-fluid"
+          className="post-card-img"
         />
       )}
 
@@ -55,7 +55,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
         </Card.Title>
 
         {/* Descripción de la publicación */}
-        <Card.Text>
+        <Card.Text className="post-card-text">
           {publicacion.description}
         </Card.Text>
 
@@ -106,7 +106,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
         <div className="mt-auto">
           <Link
             to={`/post/${publicacion.id}`}
-            className="btn btn-primary"
+            className="btn btn-primary w-100"
           >
             Ver más
           </Link>

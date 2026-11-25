@@ -8,6 +8,7 @@ import { obtenerEtiquetas } from "../services/etiquetaService";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 
@@ -50,10 +51,6 @@ export default function HomePage() {
           pub.Tags.some((tag) => tag.id === etiquetaSeleccionada),
         );
 
-  if (cargando) {
-    return <p>Cargando publicaciones...</p>;
-  }
-
   if (error) {
     return <p role="alert">{error}</p>;
   }
@@ -61,11 +58,11 @@ export default function HomePage() {
   return (
     <main>
       {/* Presentación principal */}
-      <section className="bg-light py-5 mb-4">
+      <section className="bg-body-secondary py-5 mb-4">
         <Container>
           <Row className="justify-content-center">
             <Col lg={9} className="text-center">
-              <h1 className="display-4 fw-bold">
+              <h1 className=" display-4 fw-bold">
                 UnaHur Anti-Social Net
               </h1>
 
@@ -79,23 +76,6 @@ export default function HomePage() {
       </section>
 
       <Container className="pb-5">
-        {/* Sobre nosotros */}
-        <section className="mb-5">
-          <Row className="justify-content-center">
-            <Col lg={9} className="text-center">
-              <h2 className="mb-3">
-                Sobre nosotros
-              </h2>
-
-              <p className="text-muted">
-                Proyecto desarrollado para Construcción de
-                Interfaces de Usuario (UNAHUR). Publicá tus
-                reflexiones, compartí imágenes y debatí con
-                otros estudiantes.
-              </p>
-            </Col>
-          </Row>
-        </section>
 
         {/* Filtros */}
         <section className="mb-5">
@@ -143,7 +123,27 @@ export default function HomePage() {
             Publicaciones recientes
           </h2>
 
-          {publicacionesFiltradas.length === 0 ? (
+          {cargando ? (
+            <Row className="g-4">
+              {[1, 2, 3, 4, 5, 6].map((numero) => (
+                <Col key={numero} xs={12} md={6} lg={4}>
+                  <Card className="h-100 shadow-sm placeholder-glow overflow-hidden">
+                    <div
+                      className="placeholder w-100"
+                      style={{ height: 200 }}
+                    />
+
+                    <Card.Body>
+                      <h5 className="placeholder col-6" />
+                      <p className="placeholder col-12" />
+                      <p className="placeholder col-10" />
+                      <p className="placeholder col-8" />
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          ) : publicacionesFiltradas.length === 0 ? (
             <Alert variant="secondary">
               No hay publicaciones para mostrar.
             </Alert>

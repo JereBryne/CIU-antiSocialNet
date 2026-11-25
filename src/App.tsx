@@ -1,6 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, NavLink } from "react-router-dom";
 import { useContext } from "react";
 
+import Form from "react-bootstrap/Form";
+import { useTema } from "./pages/tema";
+
+import SobreNosotrosPage from "./pages/SobreNosotrosPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegistroPage from "./pages/RegistroPage";
@@ -24,71 +28,113 @@ export default function App() {
     localStorage.removeItem("usuario");
   };
 
+  const { tema, setTema } = useTema();
+
   return (
     <BrowserRouter>
-
       <Navbar
         bg="dark"
         data-bs-theme="dark"
         expand="md"
+        collapseOnSelect
         className="mb-4"
       >
         <Container>
-          
-          <Navbar.Brand href="/">
+          <Link className="navbar-brand" to="/">
             UnaHur Anti-Social Net
-          </Navbar.Brand>
+          </Link>
 
-          
           <Navbar.Toggle aria-controls="navbar-principal" />
 
           <Navbar.Collapse id="navbar-principal">
             {/* Parte izquierda */}
             <Nav className="me-auto">
-              <Nav.Link href="/">
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+              >
                 Inicio
-              </Nav.Link>
+              </NavLink>
+              <NavLink
+                to="/sobre-nosotros"
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+              >
+                Sobre nosotros
+              </NavLink>
 
               {!usuario ? (
                 <>
-                  <Nav.Link href="/login">
+                  <NavLink
+                    to="/login"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
                     Iniciar sesión
-                  </Nav.Link>
+                  </NavLink>
 
-                  <Nav.Link href="/registro">
+                  <NavLink
+                    to="/registro"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
                     Registrarse
-                  </Nav.Link>
+                  </NavLink>
                 </>
               ) : (
                 <>
-                  <Nav.Link href="/crear-publicacion">
+                  <NavLink
+                    to="/crear-publicacion"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
                     Nueva publicación
-                  </Nav.Link>
+                  </NavLink>
 
-                  <Nav.Link href="/perfil">
+                  <NavLink
+                    to="/perfil"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
                     Perfil
-                  </Nav.Link>
+                  </NavLink>
                 </>
               )}
             </Nav>
 
             {/* Parte derecha: solamente aparece si hay usuario logueado */}
-            {usuario && (
-              <Nav className="align-items-md-center gap-2">
-                <Navbar.Text>
-                  Hola, {usuario.nickName}
-                </Navbar.Text>
+            <Nav className="align-items-md-center gap-2 ">
+              <Form.Check
+                type="switch"
+                id="modo-oscuro"
+                label={tema === "dark" ? "Modo claro" : "Modo oscuro"}
+                checked={tema === "dark"}
+                onChange={(e) => setTema(e.target.checked ? "dark" : "light")}
+                className="mb-0 text-light"
+              />
 
-                <Button
-                  type="button"
-                  variant="outline-light"
-                  size="sm"
-                  onClick={cerrarSesion}
-                >
-                  Cerrar sesión
-                </Button>
-              </Nav>
-            )}
+              {usuario && (
+                <>
+                  <Navbar.Text>Hola, {usuario.nickName}</Navbar.Text>
+                  <Button
+                    type="button"
+                    variant="outline-light"
+                    size="sm"
+                    onClick={cerrarSesion}
+                  >
+                    Cerrar sesión
+                  </Button>
+                </>
+              )}
+            </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
@@ -96,6 +142,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegistroPage />} />
+        <Route path="/sobre-nosotros" element={<SobreNosotrosPage />} />
         <Route
           path="/perfil"
           element={
@@ -114,6 +161,9 @@ export default function App() {
         />
         <Route path="/post/:id" element={<DetallePublicacionPage />} />
       </Routes>
+      <footer className="border-top mt-5 py-4 text-center text-body-secondary small">
+        UnaHur Anti-Social Net · Construcción de Interfaces de Usuario · UNAHUR
+      </footer>
     </BrowserRouter>
   );
 }
